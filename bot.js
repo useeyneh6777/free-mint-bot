@@ -37,6 +37,7 @@ async function checkEth() {
         "• <a href='https://mint.fun/eth/" + contract + "'>mint.fun</a>\n" +
         "• <a href='https://zora.co/collect/eth:" + contract + "'>Zora</a>\n" +
         "• <a href='https://opensea.io/assets/ethereum/" + contract + "'>OpenSea</a>\n" +
+        "• <a href='https://magiceden.io/collections/ethereum/" + contract + "'>Magic Eden</a>\n" +
         "• <a href='https://etherscan.io/address/" + contract + "'>Etherscan</a>\n" +
         "• <a href='" + xSearch + "'>Search on X 𝕏</a>";
       await sendTelegram(msg);
@@ -68,6 +69,7 @@ async function checkBase() {
         "• <a href='https://mint.fun/base/" + contract + "'>mint.fun</a>\n" +
         "• <a href='https://zora.co/collect/base:" + contract + "'>Zora</a>\n" +
         "• <a href='https://opensea.io/assets/base/" + contract + "'>OpenSea</a>\n" +
+        "• <a href='https://magiceden.io/collections/base/" + contract + "'>Magic Eden</a>\n" +
         "• <a href='https://basescan.org/address/" + contract + "'>Basescan</a>\n" +
         "• <a href='" + xSearch + "'>Search on X 𝕏</a>";
       await sendTelegram(msg);
@@ -110,6 +112,7 @@ async function checkApeChain() {
         "🔗 Links:\n" +
         "• <a href='https://apescan.io/address/" + contract + "'>ApeScan</a>\n" +
         "• <a href='https://opensea.io/assets/apechain/" + contract + "'>OpenSea</a>\n" +
+        "• <a href='https://magiceden.io/collections/apechain/" + contract + "'>Magic Eden</a>\n" +
         "• <a href='" + xSearch + "'>Search on X 𝕏</a>";
       await sendTelegram(msg);
       await new Promise(function(r) { setTimeout(r, 1000); });
