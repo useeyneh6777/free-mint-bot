@@ -7,13 +7,36 @@ const ALCHEMY_KEY = process.env.ALCHEMY_KEY;
 const POLL_INTERVAL = 15 * 60 * 1000;
 const seen = new Set();
 
-function safeQuery(str = "") {
+/* ---------------- HELPERS ---------------- */
+
+function q(str = "") {
   return encodeURIComponent(str);
+}
+
+function buildLinks({ chain, contract, name }) {
+  const nameQ = q((name || "NFT") + " nft");
+
+  const explorer =
+    chain === "eth"
+      ? `https://etherscan.io/address/${contract}`
+      : chain === "base"
+      ? `https://basescan.org/address/${contract}`
+      : `https://apescan.io/address/${contract}`;
+
+  return {
+    mintfun: `https://mint.fun/search?query=${nameQ}`,
+    zora: `https://zora.co/search?q=${nameQ}`,
+    opensea: `https://opensea.io/search?q=${nameQ}`,
+    magiceden: `https://magiceden.io/marketplace?search=${nameQ}`,
+    explorer,
+    x: `https://x.com/search?q=${nameQ}&src=typed_query`
+  };
 }
 
 async function sendTelegram(message) {
   try {
     const url = "https://api.telegram.org/bot" + TELEGRAM_TOKEN + "/sendMessage";
+
     await axios.post(url, {
       chat_id: CHAT_ID,
       text: message,
@@ -38,11 +61,9 @@ async function checkEth() {
       params: { limit: 20, orderBy: "BLOCK_TIME_DESC" }
     });
 
-    const nfts = res.data && res.data.nfts ? res.data.nfts : [];
+    const nfts = res.data?.nfts || [];
 
-    for (let i = 0; i < nfts.length; i++) {
-      const nft = nfts[i];
-
+    for (let nft of nfts) {
       const contract = nft.contract?.address || "";
       const name = nft.contract?.name || "Unknown Collection";
 
@@ -50,24 +71,22 @@ async function checkEth() {
       if (seen.has(key)) continue;
       seen.add(key);
 
-      const q = safeQuery(name + " nft mint");
-      const xSearch =
-        "https://x.com/search?q=" + q + "&src=typed_query";
+      const links = buildLinks({ chain: "eth", contract, name });
 
       const msg =
         "🆓 <b>Free Mint Alert! (Ethereum)</b>\n\n" +
         "🖼 <b>" + name + "</b>\n" +
         "📄 Contract: <code>" + contract + "</code>\n\n" +
-        "🔗 Explore Links:\n" +
-        "• <a href='https://mint.fun/search?query=" + q + "'>mint.fun</a>\n" +
-        "• <a href='https://zora.co/search?q=" + q + "'>Zora</a>\n" +
-        "• <a href='https://opensea.io/assets?search[query]=" + q + "'>OpenSea</a>\n" +
-        "• <a href='https://magiceden.io/marketplace?search=" + q + "'>Magic Eden</a>\n" +
-        "• <a href='https://etherscan.io/address/" + contract + "'>Etherscan</a>\n" +
-        "• <a href='" + xSearch + "'>Search on X 𝕏</a>";
+        "🔗 Links:\n" +
+        "• <a href='" + links.mintfun + "'>mint.fun</a>\n" +
+        "• <a href='" + links.zora + "'>Zora</a>\n" +
+        "• <a href='" + links.opensea + "'>OpenSea</a>\n" +
+        "• <a href='" + links.magiceden + "'>Magic Eden</a>\n" +
+        "• <a href='" + links.explorer + "'>Explorer</a>\n" +
+        "• <a href='" + links.x + "'>Search on X 𝕏</a>";
 
       await sendTelegram(msg);
-      await new Promise((r) => setTimeout(r, 1000));
+      await new Promise(r => setTimeout(r, 1000));
     }
   } catch (err) {
     console.error("ETH error: " + err.message);
@@ -87,11 +106,9 @@ async function checkBase() {
       params: { limit: 20, orderBy: "BLOCK_TIME_DESC" }
     });
 
-    const nfts = res.data && res.data.nfts ? res.data.nfts : [];
+    const nfts = res.data?.nfts || [];
 
-    for (let i = 0; i < nfts.length; i++) {
-      const nft = nfts[i];
-
+    for (let nft of nfts) {
       const contract = nft.contract?.address || "";
       const name = nft.contract?.name || "Unknown Collection";
 
@@ -99,24 +116,22 @@ async function checkBase() {
       if (seen.has(key)) continue;
       seen.add(key);
 
-      const q = safeQuery(name + " nft mint");
-      const xSearch =
-        "https://x.com/search?q=" + q + "&src=typed_query";
+      const links = buildLinks({ chain: "base", contract, name });
 
       const msg =
         "🆓 <b>Free Mint Alert! (Base)</b>\n\n" +
         "🖼 <b>" + name + "</b>\n" +
         "📄 Contract: <code>" + contract + "</code>\n\n" +
-        "🔗 Explore Links:\n" +
-        "• <a href='https://mint.fun/search?query=" + q + "'>mint.fun</a>\n" +
-        "• <a href='https://zora.co/search?q=" + q + "'>Zora</a>\n" +
-        "• <a href='https://opensea.io/assets?search[query]=" + q + "'>OpenSea</a>\n" +
-        "• <a href='https://magiceden.io/marketplace?search=" + q + "'>Magic Eden</a>\n" +
-        "• <a href='https://basescan.org/address/" + contract + "'>Basescan</a>\n" +
-        "• <a href='" + xSearch + "'>Search on X 𝕏</a>";
+        "🔗 Links:\n" +
+        "• <a href='" + links.mintfun + "'>mint.fun</a>\n" +
+        "• <a href='" + links.zora + "'>Zora</a>\n" +
+        "• <a href='" + links.opensea + "'>OpenSea</a>\n" +
+        "• <a href='" + links.magiceden + "'>Magic Eden</a>\n" +
+        "• <a href='" + links.explorer + "'>Explorer</a>\n" +
+        "• <a href='" + links.x + "'>Search on X 𝕏</a>";
 
       await sendTelegram(msg);
-      await new Promise((r) => setTimeout(r, 1000));
+      await new Promise(r => setTimeout(r, 1000));
     }
   } catch (err) {
     console.error("Base error: " + err.message);
@@ -159,38 +174,38 @@ async function checkApeChain() {
 
     const logs = logsRes.data?.result || [];
 
-    for (let i = 0; i < logs.length; i++) {
-      const log = logs[i];
-
+    for (let log of logs) {
       const contract = log.address;
 
       const key = "ape:" + contract.toLowerCase();
       if (seen.has(key)) continue;
       seen.add(key);
 
-      const q = safeQuery(contract);
-
-      const xSearch =
-        "https://x.com/search?q=" + q + "&src=typed_query";
+      const links = buildLinks({
+        chain: "ape",
+        contract,
+        name: "NFT"
+      });
 
       const msg =
         "🆓 <b>Free Mint Alert! (ApeChain)</b>\n\n" +
         "📄 Contract: <code>" + contract + "</code>\n\n" +
-        "🔗 Explore Links:\n" +
-        "• <a href='https://apescan.io/address/" + contract + "'>ApeScan</a>\n" +
-        "• <a href='https://opensea.io/assets?search[query]=" + q + "'>OpenSea</a>\n" +
-        "• <a href='https://magiceden.io/marketplace?search=" + q + "'>Magic Eden</a>\n" +
-        "• <a href='" + xSearch + "'>Search on X 𝕏</a>";
+        "🔗 Links:\n" +
+        "• <a href='" + links.mintfun + "'>mint.fun</a>\n" +
+        "• <a href='" + links.opensea + "'>OpenSea</a>\n" +
+        "• <a href='" + links.magiceden + "'>Magic Eden</a>\n" +
+        "• <a href='" + links.explorer + "'>Explorer</a>\n" +
+        "• <a href='" + links.x + "'>Search on X 𝕏</a>";
 
       await sendTelegram(msg);
-      await new Promise((r) => setTimeout(r, 1000));
+      await new Promise(r => setTimeout(r, 1000));
     }
   } catch (err) {
     console.error("ApeChain error: " + err.message);
   }
 }
 
-/* ---------------- MAIN LOOP ---------------- */
+/* ---------------- MAIN ---------------- */
 
 async function checkMints() {
   console.log("Checking all chains...");
