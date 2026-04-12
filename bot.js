@@ -10,7 +10,7 @@ const seen = new Set();
 async function sendTelegram(message) {
   try {
     const url = "https://api.telegram.org/bot" + TELEGRAM_TOKEN + "/sendMessage";
-    await axios.post(url, { chat_id: CHAT_ID, text: message });
+    await axios.post(url, { chat_id: CHAT_ID, text: message, parse_mode: "HTML" });
   } catch (err) {
     console.error("Telegram error: " + err.message);
   }
@@ -31,7 +31,15 @@ async function checkMints() {
       var key = "eth:" + contract + ":" + (nft.tokenId || "");
       if (seen.has(key)) continue;
       seen.add(key);
-      var msg = "🆓 Free Mint Alert!\n" + name + "\nContract: " + contract + "\nhttps://etherscan.io/address/" + contract;
+      var msg =
+        "🆓 <b>Free Mint Alert!</b>\n\n" +
+        "🖼 <b>" + name + "</b>\n" +
+        "📄 Contract: <code>" + contract + "</code>\n\n" +
+        "🔗 Mint Links:\n" +
+        "• <a href='https://mint.fun/eth/" + contract + "'>mint.fun</a>\n" +
+        "• <a href='https://zora.co/collect/eth:" + contract + "'>Zora</a>\n" +
+        "• <a href='https://opensea.io/assets/ethereum/" + contract + "'>OpenSea</a>\n" +
+        "• <a href='https://etherscan.io/address/" + contract + "'>Etherscan</a>";
       await sendTelegram(msg);
       await new Promise(function(r) { setTimeout(r, 1000); });
     }
@@ -43,7 +51,7 @@ async function checkMints() {
 async function start() {
   console.log("Bot starting...");
   if (!TELEGRAM_TOKEN || !CHAT_ID) { process.exit(1); }
-  await sendTelegram("Free Mint Bot is live!");
+  await sendTelegram("🤖 Free Mint Bot is live! Watching Ethereum for free mints.");
   await checkMints();
   setInterval(checkMints, POLL_INTERVAL);
 }
